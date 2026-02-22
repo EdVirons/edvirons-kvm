@@ -7,43 +7,104 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
+        :root {
+            --bg-primary: #0f0f0f;
+            --bg-secondary: #1a1a1a;
+            --bg-tertiary: #252525;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+        
         body {
-            background: #0a0a0a;
-            color: #fff;
+            background: var(--bg-primary);
+            color: var(--text-primary);
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
         
+        /* Toolbar */
         .toolbar {
-            background: #1a1a1a;
-            padding: 10px 20px;
+            background: var(--bg-secondary);
+            padding: 8px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 1px solid #333;
+            flex-shrink: 0;
         }
         
-        .toolbar h1 {
-            font-size: 18px;
+        .toolbar-left {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 16px;
         }
         
-        .toolbar .device-name {
-            color: #60a5fa;
-            font-weight: normal;
-        }
-        
-        .toolbar-actions {
+        .logo {
+            font-size: 16px;
+            font-weight: 600;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
         }
         
+        .device-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding-left: 16px;
+            border-left: 1px solid #333;
+        }
+        
+        .device-name {
+            color: var(--accent);
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+        
+        .status-badge.offline {
+            background: rgba(239, 68, 68, 0.15);
+            color: var(--danger);
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+        
+        .toolbar-center {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .toolbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* Buttons */
         .btn {
-            padding: 8px 16px;
+            padding: 6px 12px;
             border: none;
             border-radius: 6px;
             font-size: 13px;
@@ -51,40 +112,67 @@
             display: flex;
             align-items: center;
             gap: 6px;
-            transition: all 0.2s;
+            transition: all 0.15s;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
         }
         
-        .btn-primary { background: #3b82f6; color: white; }
-        .btn-primary:hover { background: #2563eb; }
-        .btn-secondary { background: #333; color: white; }
-        .btn-secondary:hover { background: #444; }
-        .btn-danger { background: #dc2626; color: white; }
-        .btn-danger:hover { background: #b91c1c; }
-        .btn-success { background: #16a34a; color: white; }
-        .btn-success:hover { background: #15803d; }
+        .btn:hover { background: #333; }
+        .btn:active { transform: scale(0.98); }
         
-        .status {
+        .btn-primary { background: var(--accent); }
+        .btn-primary:hover { background: var(--accent-hover); }
+        
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #dc2626; }
+        
+        .btn-icon {
+            padding: 6px 8px;
+            font-size: 16px;
+        }
+        
+        .btn-group {
+            display: flex;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        
+        .btn-group .btn {
+            border-radius: 0;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .btn-group .btn:last-child { border-right: none; }
+        
+        /* Stats bar */
+        .stats-bar {
+            background: var(--bg-secondary);
+            padding: 6px 16px;
+            display: flex;
+            gap: 24px;
+            font-size: 12px;
+            color: var(--text-secondary);
+            border-bottom: 1px solid #333;
+        }
+        
+        .stat {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 13px;
+            gap: 6px;
         }
         
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #ef4444;
+        .stat-value {
+            color: var(--text-primary);
+            font-weight: 500;
         }
         
-        .status-dot.connected {
-            background: #22c55e;
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        /* Console */
+        .console-wrapper {
+            flex: 1;
+            display: flex;
+            background: #000;
+            position: relative;
+            overflow: hidden;
         }
         
         .console-container {
@@ -92,280 +180,616 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #000;
             position: relative;
-            overflow: hidden;
         }
         
         #console-canvas {
             max-width: 100%;
             max-height: 100%;
+            object-fit: contain;
+        }
+        
+        .console-container.captured {
             cursor: none;
         }
         
+        /* Side panel */
+        .side-panel {
+            width: 280px;
+            background: var(--bg-secondary);
+            border-left: 1px solid #333;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        
+        .side-panel.hidden { display: none; }
+        
+        .panel-section {
+            padding: 16px;
+            border-bottom: 1px solid #333;
+        }
+        
+        .panel-section h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        
+        /* Power controls */
+        .power-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        
+        .power-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        
+        .power-btn:hover { background: #333; }
+        
+        .power-btn .icon { font-size: 20px; margin-bottom: 4px; }
+        .power-btn .label { font-size: 11px; color: var(--text-secondary); }
+        
+        .power-btn.danger:hover { background: rgba(239, 68, 68, 0.2); }
+        
+        /* Virtual Media */
+        .media-slot {
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 8px;
+        }
+        
+        .media-slot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .media-slot-name {
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .media-slot-status {
+            font-size: 11px;
+            color: var(--text-secondary);
+        }
+        
+        .media-slot-status.mounted { color: var(--success); }
+        
+        .media-actions {
+            display: flex;
+            gap: 6px;
+        }
+        
+        .media-actions .btn { padding: 4px 8px; font-size: 11px; }
+        
+        /* Serial console */
+        .serial-terminal {
+            background: #000;
+            border-radius: 6px;
+            padding: 8px;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            height: 150px;
+            overflow-y: auto;
+            color: #0f0;
+        }
+        
+        .serial-input {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .serial-input input {
+            flex: 1;
+            background: var(--bg-tertiary);
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 6px 10px;
+            color: white;
+            font-family: monospace;
+        }
+        
+        /* Keyboard shortcuts panel */
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+        
+        .shortcut-btn {
+            padding: 8px;
+            font-size: 11px;
+            text-align: center;
+        }
+        
+        /* Connection overlay */
         .overlay {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            text-align: center;
-            padding: 40px;
-            background: rgba(0,0,0,0.9);
-            border-radius: 16px;
-            border: 1px solid #333;
-        }
-        
-        .overlay h2 {
-            font-size: 24px;
-            margin-bottom: 10px;
-        }
-        
-        .overlay p {
-            color: #888;
-            margin-bottom: 20px;
-        }
-        
-        .power-menu {
-            position: absolute;
-            top: 50px;
-            right: 20px;
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 8px;
-            padding: 8px;
-            display: none;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.95);
+            display: flex;
+            justify-content: center;
+            align-items: center;
             z-index: 100;
         }
         
-        .power-menu.show { display: block; }
+        .overlay.hidden { display: none; }
         
-        .power-menu button {
-            display: block;
+        .connect-card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        .connect-card h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .connect-card p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+        
+        .connect-card input {
             width: 100%;
-            padding: 10px 20px;
-            text-align: left;
-            background: none;
-            border: none;
+            padding: 12px 16px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: var(--bg-tertiary);
             color: white;
-            cursor: pointer;
-            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 16px;
         }
         
-        .power-menu button:hover {
-            background: #333;
+        .connect-card input:focus {
+            outline: none;
+            border-color: var(--accent);
         }
         
-        .keyboard-indicator {
-            position: absolute;
+        /* Keyboard capture indicator */
+        .capture-indicator {
+            position: fixed;
             bottom: 20px;
-            right: 20px;
-            background: rgba(0,0,0,0.8);
-            padding: 8px 12px;
-            border-radius: 6px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.9);
+            padding: 8px 16px;
+            border-radius: 8px;
             font-size: 12px;
-            color: #888;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            z-index: 50;
         }
         
-        .keyboard-indicator.active {
-            color: #22c55e;
-            border: 1px solid #22c55e;
+        .capture-indicator.active {
+            color: var(--success);
+            border: 1px solid var(--success);
         }
         
-        .fullscreen-btn {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            z-index: 10;
+        /* Latency indicator */
+        .latency {
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            background: rgba(34, 197, 94, 0.15);
+            color: var(--success);
+        }
+        
+        .latency.medium { background: rgba(245, 158, 11, 0.15); color: var(--warning); }
+        .latency.high { background: rgba(239, 68, 68, 0.15); color: var(--danger); }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .side-panel { display: none; }
+            .stats-bar { display: none; }
+            .toolbar { flex-wrap: wrap; gap: 8px; }
         }
     </style>
 </head>
 <body>
+    <!-- Toolbar -->
     <div class="toolbar">
-        <h1>
-            🖥️ KVM Console
-            <span class="device-name" id="deviceName">Connecting...</span>
-        </h1>
-        
-        <div class="status">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusText">Disconnected</span>
+        <div class="toolbar-left">
+            <div class="logo">🖥️ EdVirons KVM</div>
+            <div class="device-info">
+                <span class="device-name" id="deviceName">Not Connected</span>
+                <div class="status-badge offline" id="statusBadge">
+                    <span class="status-dot"></span>
+                    <span id="statusText">Offline</span>
+                </div>
+            </div>
         </div>
         
-        <div class="toolbar-actions">
-            <button class="btn btn-secondary" onclick="sendCtrlAltDel()">
-                Ctrl+Alt+Del
-            </button>
-            <button class="btn btn-secondary" id="powerBtn" onclick="togglePowerMenu()">
-                ⚡ Power
-            </button>
-            <button class="btn btn-primary" onclick="toggleFullscreen()">
-                ⛶ Fullscreen
-            </button>
-        </div>
-    </div>
-    
-    <div class="power-menu" id="powerMenu">
-        <button onclick="powerAction('on')">🟢 Power On</button>
-        <button onclick="powerAction('off')">🔴 Power Off</button>
-        <button onclick="powerAction('reset')">🔄 Reset</button>
-        <button onclick="powerAction('cycle')">⚡ Power Cycle</button>
-    </div>
-    
-    <div class="console-container" id="consoleContainer">
-        <canvas id="console-canvas" width="1920" height="1080"></canvas>
-        
-        <div class="overlay" id="connectOverlay">
-            <h2>🖥️ Remote Console</h2>
-            <p>Enter device ID to connect</p>
-            <input type="text" id="deviceIdInput" placeholder="Device ID" 
-                   style="padding: 12px; width: 300px; border-radius: 8px; border: 1px solid #444; background: #222; color: white; margin-bottom: 15px;">
-            <br>
-            <button class="btn btn-success" onclick="connect()">Connect</button>
+        <div class="toolbar-center">
+            <div class="btn-group">
+                <button class="btn btn-icon" onclick="toggleQuality('auto')" title="Auto Quality">🔄</button>
+                <button class="btn btn-icon" onclick="toggleQuality('1080p')" title="1080p">HD</button>
+                <button class="btn btn-icon" onclick="toggleQuality('720p')" title="720p">SD</button>
+            </div>
         </div>
         
-        <div class="keyboard-indicator" id="keyboardIndicator">
-            Press to capture keyboard
+        <div class="toolbar-right">
+            <span class="latency" id="latency">-- ms</span>
+            <button class="btn" onclick="sendCtrlAltDel()">Ctrl+Alt+Del</button>
+            <button class="btn btn-icon" onclick="togglePanel()" title="Toggle Panel">⚙️</button>
+            <button class="btn btn-icon" onclick="toggleFullscreen()" title="Fullscreen">⛶</button>
         </div>
     </div>
     
+    <!-- Stats bar -->
+    <div class="stats-bar">
+        <div class="stat">
+            <span>Resolution:</span>
+            <span class="stat-value" id="resolution">--</span>
+        </div>
+        <div class="stat">
+            <span>FPS:</span>
+            <span class="stat-value" id="fps">--</span>
+        </div>
+        <div class="stat">
+            <span>Bitrate:</span>
+            <span class="stat-value" id="bitrate">--</span>
+        </div>
+        <div class="stat">
+            <span>Codec:</span>
+            <span class="stat-value">H.264</span>
+        </div>
+    </div>
+    
+    <!-- Main content -->
+    <div class="console-wrapper">
+        <div class="console-container" id="consoleContainer" tabindex="0">
+            <canvas id="console-canvas" width="1920" height="1080"></canvas>
+            
+            <!-- Connection overlay -->
+            <div class="overlay" id="connectOverlay">
+                <div class="connect-card">
+                    <h2>🖥️ Remote Console</h2>
+                    <p>Connect to an Edgebox for remote access</p>
+                    <input type="text" id="deviceIdInput" placeholder="Enter Device ID">
+                    <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;" onclick="connect()">
+                        Connect
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Side panel -->
+        <div class="side-panel" id="sidePanel">
+            <!-- Power Control -->
+            <div class="panel-section">
+                <h3>⚡ Power Control</h3>
+                <div class="power-grid">
+                    <button class="power-btn" onclick="powerAction('on')">
+                        <div class="icon">🟢</div>
+                        <div class="label">Power On</div>
+                    </button>
+                    <button class="power-btn danger" onclick="powerAction('off')">
+                        <div class="icon">🔴</div>
+                        <div class="label">Power Off</div>
+                    </button>
+                    <button class="power-btn" onclick="powerAction('reset')">
+                        <div class="icon">🔄</div>
+                        <div class="label">Reset</div>
+                    </button>
+                    <button class="power-btn danger" onclick="powerAction('force-off')">
+                        <div class="icon">⚠️</div>
+                        <div class="label">Force Off</div>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Virtual Media -->
+            <div class="panel-section">
+                <h3>💿 Virtual Media</h3>
+                <div class="media-slot">
+                    <div class="media-slot-header">
+                        <span class="media-slot-name">📀 CD/DVD Drive</span>
+                        <span class="media-slot-status" id="cdStatus">Empty</span>
+                    </div>
+                    <div class="media-actions">
+                        <button class="btn" onclick="mountISO()">Mount ISO</button>
+                        <button class="btn" onclick="ejectMedia('cd')">Eject</button>
+                    </div>
+                </div>
+                <div class="media-slot">
+                    <div class="media-slot-header">
+                        <span class="media-slot-name">💾 USB Drive</span>
+                        <span class="media-slot-status" id="usbStatus">Empty</span>
+                    </div>
+                    <div class="media-actions">
+                        <button class="btn" onclick="mountUSB()">Mount IMG</button>
+                        <button class="btn" onclick="ejectMedia('usb')">Eject</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Keyboard Shortcuts -->
+            <div class="panel-section">
+                <h3>⌨️ Quick Keys</h3>
+                <div class="shortcuts-grid">
+                    <button class="btn shortcut-btn" onclick="sendKey('F2')">F2 (BIOS)</button>
+                    <button class="btn shortcut-btn" onclick="sendKey('F12')">F12 (Boot)</button>
+                    <button class="btn shortcut-btn" onclick="sendKey('Del')">Del</button>
+                    <button class="btn shortcut-btn" onclick="sendKey('Esc')">Esc</button>
+                    <button class="btn shortcut-btn" onclick="sendCtrlAltDel()">Ctrl+Alt+Del</button>
+                    <button class="btn shortcut-btn" onclick="sendAltTab()">Alt+Tab</button>
+                    <button class="btn shortcut-btn" onclick="sendAltF4()">Alt+F4</button>
+                    <button class="btn shortcut-btn" onclick="sendWinKey()">⊞ Win</button>
+                </div>
+            </div>
+            
+            <!-- Serial Console -->
+            <div class="panel-section">
+                <h3>📟 Serial Console</h3>
+                <div class="serial-terminal" id="serialTerminal">
+                    <span style="color:#666">Serial console ready...</span>
+                </div>
+                <div class="serial-input">
+                    <input type="text" id="serialInput" placeholder="Enter command...">
+                    <button class="btn" onclick="sendSerial()">Send</button>
+                </div>
+            </div>
+            
+            <!-- Device Info -->
+            <div class="panel-section">
+                <h3>ℹ️ Device Info</h3>
+                <div style="font-size:12px;color:var(--text-secondary);">
+                    <p>Power LED: <span id="powerLed" style="color:var(--success)">●</span></p>
+                    <p>HDD LED: <span id="hddLed" style="color:#666">●</span></p>
+                    <p style="margin-top:8px;">JetKVM: <span id="jetkvmVersion">v1.2.0</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Capture indicator -->
+    <div class="capture-indicator" id="captureIndicator">
+        <span>🖱️ Click console to capture input</span>
+    </div>
+
     <script>
+        // Elements
         const canvas = document.getElementById('console-canvas');
         const ctx = canvas.getContext('2d');
         const overlay = document.getElementById('connectOverlay');
-        const statusDot = document.getElementById('statusDot');
-        const statusText = document.getElementById('statusText');
-        const deviceName = document.getElementById('deviceName');
-        const keyboardIndicator = document.getElementById('keyboardIndicator');
+        const container = document.getElementById('consoleContainer');
+        const captureIndicator = document.getElementById('captureIndicator');
         
         let ws = null;
-        let keyboardCaptured = false;
+        let captured = false;
+        let lastFrameTime = Date.now();
+        let frameCount = 0;
+        let currentFps = 0;
         
-        // Get device ID from URL params
-        const urlParams = new URLSearchParams(window.location.search);
-        const deviceIdFromUrl = urlParams.get('device');
-        if (deviceIdFromUrl) {
-            document.getElementById('deviceIdInput').value = deviceIdFromUrl;
+        // URL params
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('device')) {
+            document.getElementById('deviceIdInput').value = params.get('device');
         }
         
+        // Connect to device
         function connect() {
             const deviceId = document.getElementById('deviceIdInput').value.trim();
-            if (!deviceId) {
-                alert('Please enter a device ID');
-                return;
-            }
+            if (!deviceId) return alert('Enter device ID');
             
             const wsUrl = `ws://${window.location.host}/ws/client/${deviceId}`;
             ws = new WebSocket(wsUrl);
-            
             ws.binaryType = 'arraybuffer';
             
             ws.onopen = () => {
-                statusDot.classList.add('connected');
-                statusText.textContent = 'Connected';
-                deviceName.textContent = deviceId;
-                overlay.style.display = 'none';
-                setupInputHandlers();
+                document.getElementById('statusBadge').classList.remove('offline');
+                document.getElementById('statusText').textContent = 'Connected';
+                document.getElementById('deviceName').textContent = deviceId;
+                overlay.classList.add('hidden');
+                setupInput();
             };
             
-            ws.onmessage = (event) => {
-                if (event.data instanceof ArrayBuffer) {
-                    // Video frame
-                    const blob = new Blob([event.data], { type: 'image/jpeg' });
-                    const img = new Image();
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-                        URL.revokeObjectURL(img.src);
-                    };
-                    img.src = URL.createObjectURL(blob);
+            ws.onmessage = (e) => {
+                if (e.data instanceof ArrayBuffer) {
+                    renderFrame(e.data);
+                } else {
+                    handleMessage(JSON.parse(e.data));
                 }
             };
             
             ws.onclose = () => {
-                statusDot.classList.remove('connected');
-                statusText.textContent = 'Disconnected';
-                overlay.style.display = 'block';
-            };
-            
-            ws.onerror = (error) => {
-                console.error('WebSocket error:', error);
-                statusText.textContent = 'Error';
+                document.getElementById('statusBadge').classList.add('offline');
+                document.getElementById('statusText').textContent = 'Disconnected';
+                overlay.classList.remove('hidden');
+                captured = false;
             };
         }
         
-        function setupInputHandlers() {
-            const container = document.getElementById('consoleContainer');
+        // Render video frame
+        function renderFrame(data) {
+            const blob = new Blob([data], { type: 'image/jpeg' });
+            const img = new Image();
+            img.onload = () => {
+                canvas.width = img.width;
+                canvas.height = img.height;
+                ctx.drawImage(img, 0, 0);
+                URL.revokeObjectURL(img.src);
+                updateStats(img.width, img.height);
+            };
+            img.src = URL.createObjectURL(blob);
             
-            // Keyboard capture
+            // FPS counter
+            frameCount++;
+            const now = Date.now();
+            if (now - lastFrameTime >= 1000) {
+                currentFps = frameCount;
+                frameCount = 0;
+                lastFrameTime = now;
+                document.getElementById('fps').textContent = currentFps;
+            }
+        }
+        
+        function updateStats(w, h) {
+            document.getElementById('resolution').textContent = `${w}x${h}`;
+        }
+        
+        function handleMessage(msg) {
+            if (msg.type === 'latency') {
+                const el = document.getElementById('latency');
+                el.textContent = `${msg.value} ms`;
+                el.className = 'latency' + (msg.value > 100 ? ' high' : msg.value > 50 ? ' medium' : '');
+            } else if (msg.type === 'power_status') {
+                document.getElementById('powerLed').style.color = msg.on ? 'var(--success)' : '#666';
+            }
+        }
+        
+        // Input handling
+        function setupInput() {
             container.addEventListener('click', () => {
-                keyboardCaptured = true;
-                keyboardIndicator.textContent = 'Keyboard captured (ESC to release)';
-                keyboardIndicator.classList.add('active');
+                captured = true;
+                container.classList.add('captured');
+                captureIndicator.classList.add('active');
+                captureIndicator.innerHTML = '<span>⌨️ Input captured (ESC to release)</span>';
                 container.focus();
             });
             
             document.addEventListener('keydown', (e) => {
-                if (!keyboardCaptured) return;
-                
+                if (!captured) return;
                 if (e.key === 'Escape') {
-                    keyboardCaptured = false;
-                    keyboardIndicator.textContent = 'Press to capture keyboard';
-                    keyboardIndicator.classList.remove('active');
+                    captured = false;
+                    container.classList.remove('captured');
+                    captureIndicator.classList.remove('active');
+                    captureIndicator.innerHTML = '<span>🖱️ Click console to capture input</span>';
                     return;
                 }
-                
                 e.preventDefault();
-                sendInput({ type: 'keydown', key: e.code });
+                send({ type: 'keydown', key: e.code, modifiers: getModifiers(e) });
             });
             
             document.addEventListener('keyup', (e) => {
-                if (!keyboardCaptured) return;
+                if (!captured) return;
                 e.preventDefault();
-                sendInput({ type: 'keyup', key: e.code });
+                send({ type: 'keyup', key: e.code });
             });
             
-            // Mouse handlers
             canvas.addEventListener('mousemove', (e) => {
                 const rect = canvas.getBoundingClientRect();
                 const x = Math.round((e.clientX - rect.left) / rect.width * canvas.width);
                 const y = Math.round((e.clientY - rect.top) / rect.height * canvas.height);
-                sendInput({ type: 'mousemove', x, y });
+                send({ type: 'mousemove', x, y });
             });
             
             canvas.addEventListener('mousedown', (e) => {
-                sendInput({ type: 'mousedown', button: e.button });
+                e.preventDefault();
+                send({ type: 'mousedown', button: e.button });
             });
             
             canvas.addEventListener('mouseup', (e) => {
-                sendInput({ type: 'mouseup', button: e.button });
+                send({ type: 'mouseup', button: e.button });
+            });
+            
+            canvas.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                send({ type: 'scroll', deltaY: e.deltaY });
             });
             
             canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         }
         
-        function sendInput(data) {
-            if (ws && ws.readyState === WebSocket.OPEN) {
+        function getModifiers(e) {
+            return {
+                ctrl: e.ctrlKey,
+                alt: e.altKey,
+                shift: e.shiftKey,
+                meta: e.metaKey
+            };
+        }
+        
+        function send(data) {
+            if (ws?.readyState === WebSocket.OPEN) {
                 ws.send(JSON.stringify(data));
             }
         }
         
+        // Actions
         function sendCtrlAltDel() {
-            sendInput({ type: 'keydown', key: 'ControlLeft' });
-            sendInput({ type: 'keydown', key: 'AltLeft' });
-            sendInput({ type: 'keydown', key: 'Delete' });
-            setTimeout(() => {
-                sendInput({ type: 'keyup', key: 'Delete' });
-                sendInput({ type: 'keyup', key: 'AltLeft' });
-                sendInput({ type: 'keyup', key: 'ControlLeft' });
-            }, 100);
+            send({ type: 'combo', keys: ['ControlLeft', 'AltLeft', 'Delete'] });
         }
         
-        function togglePowerMenu() {
-            document.getElementById('powerMenu').classList.toggle('show');
+        function sendAltTab() {
+            send({ type: 'combo', keys: ['AltLeft', 'Tab'] });
+        }
+        
+        function sendAltF4() {
+            send({ type: 'combo', keys: ['AltLeft', 'F4'] });
+        }
+        
+        function sendWinKey() {
+            send({ type: 'keypress', key: 'MetaLeft' });
+        }
+        
+        function sendKey(key) {
+            send({ type: 'keypress', key });
         }
         
         function powerAction(action) {
-            sendInput({ type: 'power', action });
-            document.getElementById('powerMenu').classList.remove('show');
+            if (action.includes('off') || action.includes('force')) {
+                if (!confirm(`Are you sure you want to ${action}?`)) return;
+            }
+            send({ type: 'power', action });
+        }
+        
+        function mountISO() {
+            const url = prompt('Enter ISO URL:');
+            if (url) send({ type: 'mount', media: 'cdrom', url });
+        }
+        
+        function mountUSB() {
+            const url = prompt('Enter IMG URL:');
+            if (url) send({ type: 'mount', media: 'usb', url });
+        }
+        
+        function ejectMedia(type) {
+            send({ type: 'eject', media: type });
+        }
+        
+        function sendSerial() {
+            const input = document.getElementById('serialInput');
+            const cmd = input.value;
+            if (cmd) {
+                send({ type: 'serial', command: cmd });
+                document.getElementById('serialTerminal').innerHTML += `\n<span style="color:#0ff">$ ${cmd}</span>`;
+                input.value = '';
+            }
+        }
+        
+        function toggleQuality(q) {
+            send({ type: 'quality', value: q });
+        }
+        
+        function togglePanel() {
+            document.getElementById('sidePanel').classList.toggle('hidden');
         }
         
         function toggleFullscreen() {
@@ -376,10 +800,13 @@
             }
         }
         
-        // Auto-connect if device ID in URL
-        if (deviceIdFromUrl) {
-            setTimeout(connect, 500);
-        }
+        // Auto-connect
+        if (params.get('device')) setTimeout(connect, 300);
+        
+        // Serial input enter key
+        document.getElementById('serialInput').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') sendSerial();
+        });
     </script>
 </body>
 </html>
