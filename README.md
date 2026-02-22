@@ -1,63 +1,102 @@
 # EdVirons KVM
 
-Remote KVM (Keyboard, Video, Mouse) solution for managing Edgeboxes and bare-metal servers.
+**Optional** remote KVM (Keyboard, Video, Mouse) add-on for Edgebox deployments.
 
-## Features
+> ⚠️ **JetKVM is optional!** Most schools work fine with Tier 1 (basic) deployment. Add KVM only for remote/critical schools.
 
-- 🖥️ **Remote Console** - Full BIOS/OS access via browser
-- ⌨️ **Input Passthrough** - Keyboard & mouse over WebSocket
-- 📺 **Video Streaming** - Real-time screen capture
-- ⚡ **Power Control** - On/Off/Reset/Cycle
-- 🔒 **Secure** - Token authentication, VPN-ready
+## Deployment Tiers
+
+| Tier | Hardware | Cost | Remote Console | BIOS Access | Power Control |
+|------|----------|------|----------------|-------------|---------------|
+| **Tier 1: Basic** | Edgebox only | $200-300 | ❌ | ❌ | ❌ |
+| **Tier 2: + KVM** | Edgebox + JetKVM | $310-380 | ✅ | ✅ | ✅ |
+
+**Tier 1 still has:** SSH, Web Dashboard, Monitoring, Content Sync, Remote Updates
+
+**Tier 2 adds:** Remote console, BIOS access, OS recovery, Power control, ISO mounting
+
+## When to Use KVM
+
+✅ **Add JetKVM for:**
+- Remote/hard-to-reach schools
+- Schools with no local IT support
+- Critical/pilot deployments
+- Frequent OS issues expected
+
+❌ **Skip JetKVM for:**
+- Most schools (90%)
+- Schools with local IT
+- Budget-constrained deployments
+- Stable, proven hardware
 
 ## Architecture
 
 ```
-Browser ──► KVM Proxy (Cloud) ◄──► KVM Agent ──► JetKVM ──► Edgebox
-            Port 8090                            HDMI/USB
+TIER 1 (Basic):                    TIER 2 (+ KVM):
+┌─────────────┐                    ┌─────────────┐
+│   Edgebox   │                    │   Edgebox   │
+│   Server    │                    │   Server    │
+└──────┬──────┘                    └──────┬──────┘
+       │                                  │ HDMI+USB
+       │                           ┌──────▼──────┐
+       │                           │   JetKVM    │
+       │                           │   Device    │
+       │                           └──────┬──────┘
+       │                                  │
+       ▼                                  ▼
+  VPN → Cloud                        VPN → Cloud
+  (SSH only)                    (SSH + Remote Console)
 ```
 
 ## Quick Start
 
-### 1. Deploy Proxy (Cloud)
+### For Tier 2 (KVM-enabled) Schools
 
+**1. Deploy Proxy (Cloud):**
 ```bash
+cd edvirons-kvm
 docker-compose up -d
 ```
 
-Web Console: http://localhost:8089
-
-### 2. Install Agent (Edgebox)
-
+**2. Install Agent (Edgebox):**
 ```bash
-export KVM_PROXY_URL="ws://cloud-ip:8090"
-export JETKVM_HOST="192.168.1.100"
+export KVM_PROXY_URL="ws://cloud:8090"
+export JETKVM_HOST="192.168.1.11"  # JetKVM's IP
 python3 kvm-agent/agent.py
 ```
 
-### 3. Connect
-
-Open http://cloud-ip:8089, enter device ID, connect!
+**3. Connect:** Open http://cloud:8089, enter device ID
 
 ## Components
 
-| Component | Description | Port |
-|-----------|-------------|------|
-| `kvm-proxy/` | WebSocket bridge | 8090 |
-| `kvm-agent/` | Edgebox-side agent | - |
-| `web-client/` | Browser UI | 8089 |
+| Component | Description | Required |
+|-----------|-------------|----------|
+| `kvm-proxy/` | Cloud WebSocket bridge | Only if using KVM |
+| `kvm-agent/` | Edgebox-side connector | Only if using KVM |
+| `web-client/` | Browser UI | Only if using KVM |
 
-## Requirements
+## Auto-Detection
 
-- JetKVM device connected to Edgebox
-- Python 3.8+ with aiohttp
-- Docker (for proxy deployment)
+The EduCloud agent **auto-detects** JetKVM:
+- If JetKVM found → KVM features enabled
+- If not found → Runs in basic mode
 
-## Integration
+No manual configuration needed!
 
-Works with EduCloud Edgebox management:
-- Devices with `jetkvm_enabled=true` show KVM button
-- Access via: `/edgeboxes/{id}?tab=kvm`
+## Hardware (JetKVM)
+
+| Product | Price | Purpose |
+|---------|-------|---------|
+| [JetKVM Device](https://jetkvm.com) | $69 | HDMI capture + USB HID |
+| ATX Extension | $15 | Power/Reset control |
+| Serial Extension | $20 | RS-232 console |
+
+## Documentation
+
+- [Deployment Tiers](docs/DEPLOYMENT-TIERS.md) - When to use KVM
+- [Architecture](docs/ARCHITECTURE.md) - Full technical design
+- [Features](FEATURES.md) - Feature roadmap
+- [Quick Start](docs/QUICKSTART.md) - Setup guide
 
 ## License
 
