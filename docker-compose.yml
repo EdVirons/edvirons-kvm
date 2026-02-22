@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  kvm-proxy:
+    build:
+      context: ./kvm-proxy
+    container_name: edvirons-kvm-proxy
+    ports:
+      - "8090:8090"
+    environment:
+      PROXY_PORT: "8090"
+      KVM_AUTH_TOKEN: "${KVM_AUTH_TOKEN:-edvirons-kvm-secret}"
+    volumes:
+      - ./web-client:/app/static
+    restart: unless-stopped
+
+  # Nginx to serve web client
+  web:
+    image: nginx:alpine
+    container_name: edvirons-kvm-web
+    ports:
+      - "8089:80"
+    volumes:
+      - ./web-client:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - kvm-proxy
+    restart: unless-stopped
